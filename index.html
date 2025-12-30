@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>adidasi-intrend.ro</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        *{box-sizing:border-box}
+        body{margin:0;font-family:Arial;background:#f5f5f5}
+        header{background:#111}
+        .logo-strip{background:#fff;display:flex;justify-content:center}
+        .logo{height:6cm;max-width:calc(100vw - 4cm)}
+        .slogan{font-family:'Montserrat';font-size:28px;font-weight:900;color:#fff;text-align:center;padding:12px 0 16px;text-shadow:0 0 10px rgba(255,255,255,.35)}
+        nav{text-align:center;padding-bottom:12px}
+        nav a{color:#fff;margin:0 10px;text-decoration:none}
+
+        .promo-bar{width:100%;background:linear-gradient(90deg,#ff0055,#ff9900,#ff0055);color:#fff;text-align:center;font-size:26px;font-weight:900;padding:14px;animation:pulse 2s infinite}
+        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+        .container{max-width:1100px;margin:auto;padding:20px}
+        .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+        .product{background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.1);text-align:center}
+
+        .image-container{position:relative;height:180px;display:flex;align-items:center;justify-content:center}
+        .product-img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
+        .arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.6);color:#fff;padding:5px 10px;border-radius:4px;cursor:pointer}
+        .arrow.left{left:5px}.arrow.right{right:5px}
+
+        .thumbs{display:flex;justify-content:center;gap:6px;margin-top:6px}
+        .thumbs img{width:45px;height:45px;object-fit:contain;border:2px solid transparent;border-radius:4px;cursor:pointer}
+        .thumbs img.active{border-color:#111}
+
+        .price{color:green;font-weight:bold}
+        .qty{display:flex;justify-content:center;gap:10px;margin:8px 0}
+        .size-select{width:100%;padding:6px;margin:8px 0}
+
+        button{background:#111;color:#fff;border:none;padding:7px 12px;border-radius:5px;cursor:pointer}
+
+        .cart{background:#fff;padding:15px;border-radius:8px;margin-top:30px}
+        .cart-item{display:flex;justify-content:space-between;margin-bottom:8px}
+
+        #preview{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);justify-content:center;align-items:center;z-index:1000}
+        #preview img{max-width:80%;max-height:80%}
+        .preview-arrow{position:absolute;top:50%;transform:translateY(-50%);font-size:40px;color:#fff;cursor:pointer;padding:10px}
+        .preview-left{left:20px}.preview-right{right:20px}
+
+        input.valid{border:2px solid #2ecc71}
+        input.invalid{border:2px solid #e74c3c}
+
+        .checkout{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .field{
+            position:relative;
+        }
+
+        .field input, .field textarea{
+            width:100%;
+            padding:8px;
+        }
+
+        .status{
+            position:absolute;
+            right:10px;
+            top:50%;
+            transform:translateY(-50%);
+            font-size:18px;
+        }
+        .status.ok{color:#2ecc71}
+        .status.bad{color:#e74c3c}
+
+        .size-select option.out{
+            color:#aaa;
+            text-decoration:line-through;
+        }
+
+        .size-select option.out{ color:#aaa; text-decoration:line-through }
+        .badge{
+            position:absolute; top:8px; left:8px;
+            background:red; color:#fff; padding:4px 8px;
+            border-radius:4px; font-size:12px; font-weight:bold;
+        }
+        .low-stock{ color:#e67e22; font-size:13px; margin-top:4px }
+
+        <div id="cart-items"></div>
+
+        <p id="empty-cart-msg" style="text-align:center;color:#777;margin:10px 0;">
+                                                                                  Nu ai nimic în coș.
+        </p>
+
+          .note-field{
+              position:relative;
+          }
+
+        .note-field textarea{
+            width:100%;
+            resize:none;
+            padding:8px 55px 8px 8px;   /* spațiu pentru counter */
+            font-family:inherit;
+        }
+
+        #note-counter{
+            position:absolute;
+            right:10px;
+            bottom:8px;
+            font-size:12px;
+            color:#666;
+            background:#fff;
+            padding:0 4px;
+            pointer-events:none;
+        }
+
+        .stock-warning{
+            margin-top:6px;
+            font-size:12px;
+            font-weight:900;
+            color:#fff;
+            background:#e74c3c;
+            padding:3px 8px;
+            border-radius:12px;
+            display:inline-block;
+            animation:pulseStock 1.5s infinite;
+        }
+
+        @keyframes pulseStock{
+            0%{transform:scale(1)}
+            50%{transform:scale(1.08)}
+            100%{transform:scale(1)}
+        }
+
+
+
+    </style>
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<script>
+    (function(){
+        emailjs.init("PUBLIC_KEY_AICI");
+    })();
+</script>
+
+
+<body>
+
+<header>
+    <div class="logo-strip"><img class="logo" src="img/adidasi-intrend.png"></div>
+    <div class="slogan">Ia-ți cei mai în trend adidași !</div>
+    <nav><a href="#">Acasă</a><a href="#">Magazin</a><a href="#cart">Coș (<span id="cart-count">0</span>)</a></nav>
+    <div class="promo-bar">🔥 Ultimele produse în stoc 🔥</div>
+</header>
+
+<div class="container">
+    <div class="products">
+
+        <div class="product" data-id="1">
+            <div class="image-container"><span class="arrow left">‹</span><img class="product-img"><span class="arrow right">›</span></div>
+            <div class="thumbs"></div>
+            <h3>Produs 1</h3>
+            <p class="price">99 RON</p>
+            <select class="size-select"><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select>
+            <div class="stock-warning" style="display:none;">STOC LIMITAT</div>
+            <div class="qty"><button>-</button><span>1</span><button>+</button></div>
+            <button class="add">Adaugă în coș</button>
+        </div>
+
+        <div class="product" data-id="2">
+            <div class="image-container"><span class="arrow left">‹</span><img class="product-img"><span class="arrow right">›</span></div>
+            <div class="thumbs"></div>
+            <h3>Produs 2</h3>
+            <p class="price">149 RON</p>
+            <select class="size-select"><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select>
+            <div class="stock-warning" style="display:none;">STOC LIMITAT</div>
+            <div class="qty"><button>-</button><span>1</span><button>+</button></div>
+            <button class="add">Adaugă în coș</button>
+        </div>
+
+        <div class="product" data-id="3">
+            <div class="image-container"><span class="arrow left">‹</span><img class="product-img"><span class="arrow right">›</span></div>
+            <div class="thumbs"></div>
+            <h3>Produs 3</h3>
+            <p class="price">199 RON</p>
+            <select class="size-select"><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select>
+            <div class="stock-warning" style="display:none;">STOC LIMITAT</div>
+            <div class="qty"><button>-</button><span>1</span><button>+</button></div>
+            <button class="add">Adaugă în coș</button>
+        </div>
+
+    </div>
+
+    <div id="cart" class="cart">
+        <h2>Coș</h2>
+        <div id="cart-items"></div>
+        <p id="empty-cart-msg" style="text-align:center;color:#777;margin:10px 0;"></p>
+        <p>Total final: <strong><span id="total">0</span> RON</strong></p>
+
+        <button onclick="clearCart()">Golește coșul</button>
+
+        <div style="height:15px;"></div>
+
+        <div class="checkout">
+            <div class="field">
+                <input id="name" placeholder="Nume complet">
+            </div>
+
+            <div class="field">
+                <input id="email" placeholder="Email">
+                <span id="emailStatus" class="status"></span>
+            </div>
+
+            <div class="field">
+                <input id="phone" placeholder="Telefon">
+                <span id="phoneStatus" class="status"></span>
+            </div>
+
+            <div class="field">
+                <input id="address" placeholder="Adresă">
+            </div>
+
+            <div class="field note-field">
+                <textarea
+                    id="note"
+                    maxlength="255"
+                    rows="2"
+                    placeholder="Detalii suplimentare"
+                ></textarea>
+                <div id="note-counter">0 / 255</div>
+            </div>
+
+
+            <button id="checkoutBtn" onclick="checkout()" disabled style="opacity:.5;cursor:not-allowed">
+                Plasează comanda
+            </button>
+            <p id="order-message"></p>
+        </div>
+    </div>
+</div>
+
+<div id="preview">
+    <span class="preview-arrow preview-left">‹</span>
+    <img>
+    <span class="preview-arrow preview-right">›</span>
+</div>
+
+<script>
+    // VALIDARE
+    function validateEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
+    function validatePhone(v){
+        return /^[0-9]{10}$/.test(v);
+    }
+
+
+    const emailInput=document.getElementById("email");
+    const phoneInput=document.getElementById("phone");
+
+    emailInput.oninput=()=>emailInput.className=validateEmail(emailInput.value)?"valid":"invalid";
+    phoneInput.oninput=()=>phoneInput.className=validatePhone(phoneInput.value)?"valid":"invalid";
+
+    const emailStatus = document.getElementById("emailStatus");
+    const phoneStatus = document.getElementById("phoneStatus");
+
+    emailInput.oninput = ()=>{
+        if(validateEmail(emailInput.value)){
+            emailStatus.textContent = "✔";
+            emailStatus.className = "status ok";
+        }else{
+            emailStatus.textContent = "✖";
+            emailStatus.className = "status bad";
+        }
+    };
+
+    phoneInput.oninput = ()=>{
+        if(validatePhone(phoneInput.value)){
+            phoneStatus.textContent = "✔";
+            phoneStatus.className = "status ok";
+        }else{
+            phoneStatus.textContent = "✖";
+            phoneStatus.className = "status bad";
+        }
+    };
+
+
+    // PRODUSE
+    const products={1:["img/produs1.jpg"],2:["img/produs2.jpg"],3:["img/produs3.1.jpg","img/produs3.2.jpg","img/produs3.3.jpg"]};
+    let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+
+    // === STOC PE MĂRIMI (modifici TU valorile) ===
+    // === STOC PE MĂRIMI (editabil manual) ===
+    const defaultStock = {
+        "Produs 1": {38:5,39:3,40:0,41:2,42:1,43:0,44:4,45:2},
+        "Produs 2": {38:0,39:2,40:5,41:3,42:0,43:1,44:2,45:0},
+        "Produs 3": {38:1,39:1,40:0,41:0,42:2,43:4,44:0,45:1}
+    };
+
+    let stock = JSON.parse(localStorage.getItem("stock")) || structuredClone(defaultStock);
+
+    function saveStock(){
+        localStorage.setItem("stock", JSON.stringify(stock));
+    }
+
+
+
+    function saveCart(){localStorage.setItem("cart",JSON.stringify(cart))}
+
+    function renderCart(){
+        const box = document.getElementById("cart-items");
+        const emptyMsg = document.getElementById("empty-cart-msg");
+        const checkoutBtn = document.getElementById("checkoutBtn");
+
+        let total = 0;
+        box.innerHTML = "";
+
+        if(cart.length === 0){
+            if(emptyMsg) emptyMsg.textContent = "Nu ai nimic în coș.";
+            document.getElementById("total").textContent = "0";
+            document.getElementById("cart-count").textContent = "0";
+
+            checkoutBtn.disabled = true;
+            checkoutBtn.style.opacity = "0.5";
+            checkoutBtn.style.cursor = "not-allowed";
+
+            saveCart();
+            return;
+        }
+
+        if(emptyMsg) emptyMsg.textContent = "";
+
+        cart.forEach((i,idx)=>{
+            let s = i.price * i.qty;
+            total += s;
+
+            box.innerHTML += `
+        <div class="cart-item">
+            <span>${i.name} (${i.size}) × ${i.qty}</span>
+            <span>
+                ${s} RON
+                <button onclick="removeItem(${idx})">✕</button>
+            </span>
+        </div>`;
+        });
+
+        const shipping = total >= 200 ? 0 : 20;
+
+        box.innerHTML += `
+    <div class="cart-item">
+        <strong>Transport</strong>
+        <strong>${shipping === 0 ? "GRATUIT" : shipping + " RON"}</strong>
+    </div>`;
+
+        document.getElementById("total").textContent = total + shipping;
+        document.getElementById("cart-count").textContent =
+            cart.reduce((a,b)=>a+b.qty,0);
+
+        checkoutBtn.disabled = false;
+        checkoutBtn.style.opacity = "1";
+        checkoutBtn.style.cursor = "pointer";
+
+        saveCart();
+    }
+
+    function updateStockUI(productEl, productId){
+        const select = productEl.querySelector(".size-select");
+        const badge = productEl.querySelector(".stock-warning");
+
+        // folosim stocul real al produsului
+        const productName = productEl.querySelector("h3").textContent;
+        const sizes = stock[productName];
+
+        // 1️⃣ actualizare opțiuni mărimi
+        [...select.options].forEach(opt=>{
+            const size = opt.value;
+
+            if(sizes[size] > 0){
+                opt.disabled = false;
+                opt.classList.remove("out");
+                opt.textContent = size;
+            } else {
+                opt.disabled = true;
+                opt.classList.add("out");
+                opt.textContent = size + " (indisponibil)";
+            }
+        });
+
+        // 2️⃣ calculăm câte mărimi sunt disponibile
+        const availableSizes = Object.values(sizes).filter(q => q > 0).length;
+
+        // 3️⃣ afișăm badge-ul când sunt 2 sau mai puține mărimi
+        if(availableSizes <= 2){
+            badge.style.display = "inline-block";
+        } else {
+            badge.style.display = "none";
+        }
+    }
+
+
+    function removeItem(i){cart.splice(i,1);renderCart()}
+    function clearCart(){cart=[];renderCart()}
+
+    function checkout(){
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const address = document.getElementById("address").value.trim();
+        const note = document.getElementById("note").value.trim();
+        const msg = document.getElementById("order-message");
+
+        if(!name || !email || !phone || !address || cart.length === 0){
+            msg.style.color = "red";
+            msg.textContent = "Completează corect toate datele.";
+            return;
+        }
+
+        let orderText = cart.map(i =>
+            `${i.name} (${i.size}) x ${i.qty} = ${i.price * i.qty} RON`
+        ).join("\n");
+
+        let total = document.getElementById("total").textContent;
+
+        const data = {
+            name, email, phone, address, note,
+            order: orderText,
+            total
+        };
+
+        // email către client
+        emailjs.send("SERVICE_ID", "TEMPLATE_CLIENT", data);
+
+        // email către tine
+        emailjs.send("SERVICE_ID", "TEMPLATE_ADMIN", data);
+
+        msg.style.color = "green";
+        msg.textContent = "Comandă plasată! Vei primi confirmare pe email.";
+
+        clearCart();
+    }
+
+
+    // SLIDER + PREVIEW
+    let previewIndex=0,previewImages=[];
+    document.querySelectorAll(".product").forEach(p=>{
+        const productName = p.querySelector("h3").textContent;
+        updateStockUI(p, productName);
+        const sizeSelect = p.querySelector(".size-select");
+
+
+
+        const id=p.dataset.id;
+        const images=products[id];
+        let idx=0;
+        const img=p.querySelector(".product-img");
+        const thumbs=p.querySelector(".thumbs");
+        const q=p.querySelector(".qty span");
+        img.src=images[0];
+        images.forEach((src,i)=>{
+            let t=document.createElement("img");
+            t.src=src;
+            if(!i)t.classList.add("active");
+            t.onclick=()=>{idx=i;update()};
+            thumbs.appendChild(t);
+        });
+        function update(){
+            img.src=images[idx];
+            thumbs.querySelectorAll("img").forEach((t,i)=>t.classList.toggle("active",i===idx));
+        }
+        p.querySelector(".arrow.left").onclick=()=>{idx=(idx-1+images.length)%images.length;update()};
+        p.querySelector(".arrow.right").onclick=()=>{idx=(idx+1)%images.length;update()};
+        p.querySelector(".qty button:first-child").onclick=()=>q.textContent=Math.max(1,+q.textContent-1);
+        p.querySelector(".qty button:last-child").onclick=()=>q.textContent=+q.textContent+1;
+        p.querySelector(".add").onclick = () => {
+
+            const name = p.querySelector("h3").textContent;
+            const price = +p.querySelector(".price").textContent.replace(" RON","");
+            const qty = +q.textContent;
+            const size = p.querySelector(".size-select").value;
+
+            if(stock[name][size] <= 0){
+                alert("Această mărime nu mai este în stoc.");
+                return;
+            }
+
+            // 🔍 verificăm dacă produsul există deja (același nume + mărime)
+            const existing = cart.find(item => item.name === name && item.size === size);
+
+            if(existing){
+                existing.qty += qty;   // mărim cantitatea
+            } else {
+                cart.push({ name, price, qty, size });
+            }
+
+            renderCart();
+        };
+
+        img.onclick=()=>{previewIndex=idx;previewImages=images;document.querySelector("#preview img").src=images[idx];document.getElementById("preview").style.display="flex"};
+    });
+
+    document.querySelector(".preview-left").onclick=()=>{previewIndex=(previewIndex-1+previewImages.length)%previewImages.length;document.querySelector("#preview img").src=previewImages[previewIndex]};
+    document.querySelector(".preview-right").onclick=()=>{previewIndex=(previewIndex+1)%previewImages.length;document.querySelector("#preview img").src=previewImages[previewIndex]};
+    document.getElementById("preview").onclick=e=>{if(e.target.id==="preview")e.target.style.display="none"};
+
+    renderCart();
+
+    const noteInput = document.getElementById("note");
+    const noteCounter = document.getElementById("note-counter");
+
+    noteInput.addEventListener("input", () => {
+        noteCounter.textContent = `${noteInput.value.length} / 255`;
+    });
+
+
+
+</script>
+
+</body>
+</html>
