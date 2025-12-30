@@ -358,22 +358,27 @@
             checkoutBtn.disabled = true;
             checkoutBtn.style.opacity = "0.5";
             checkoutBtn.style.cursor = "not-allowed";
-
-            saveCart();
             return;
         }
 
         if(emptyMsg) emptyMsg.textContent = "";
 
-        cart.forEach((i,idx)=>{
-            let s = i.price * i.qty;
-            total += s;
+        cart.forEach((item, idx)=>{
+            const sum = item.price * item.qty;
+            total += sum;
 
             box.innerHTML += `
         <div class="cart-item">
-            <span>${i.name} (${i.size}) × ${i.qty}</span>
             <span>
-                ${s} RON
+                ${item.name} (${item.size})
+                <div style="display:inline-flex;align-items:center;gap:6px;margin-left:10px;">
+                    <button onclick="decreaseQty(${idx})">−</button>
+                    <strong>${item.qty}</strong>
+                    <button onclick="increaseQty(${idx})">+</button>
+                </div>
+            </span>
+            <span>
+                ${sum} RON
                 <button onclick="removeItem(${idx})">✕</button>
             </span>
         </div>`;
@@ -397,6 +402,21 @@
 
         saveCart();
     }
+
+    function increaseQty(i){
+        cart[i].qty++;
+        renderCart();
+    }
+
+    function decreaseQty(i){
+        cart[i].qty--;
+        if(cart[i].qty <= 0){
+            cart.splice(i,1);
+        }
+        renderCart();
+    }
+
+
 
     function updateStockUI(productEl, productId){
         const select = productEl.querySelector(".size-select");
