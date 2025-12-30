@@ -134,6 +134,27 @@
             100%{transform:scale(1)}
         }
 
+        .layout{
+            display:flex;
+            gap:20px;
+        }
+
+        /* zona produse — 3/4 */
+        .products{
+            flex:3;
+        }
+
+        /* coș — 1/4 */
+        .cart{
+            flex:1;
+            max-width:25%;
+            position:sticky;
+            top:0;                 /* ⬅️ aliniază cu produsele */
+            height:fit-content;
+            align-self:flex-start;
+        }
+
+
 
 
     </style>
@@ -157,7 +178,7 @@
     <div class="promo-bar">🔥 Ultimele produse în stoc 🔥</div>
 </header>
 
-<div class="container">
+<div class="container layout">
     <div class="products">
 
         <div class="product" data-id="1">
@@ -187,6 +208,17 @@
             <div class="thumbs"></div>
             <h3>Produs 3</h3>
             <p class="price">199 RON</p>
+            <select class="size-select"><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select>
+            <div class="stock-warning" style="display:none;">STOC LIMITAT</div>
+            <div class="qty"><button>-</button><span>1</span><button>+</button></div>
+            <button class="add">Adaugă în coș</button>
+        </div>
+
+        <div class="product" data-id="4">
+            <div class="image-container"><span class="arrow left">‹</span><img class="product-img"><span class="arrow right">›</span></div>
+            <div class="thumbs"></div>
+            <h3>Produs 4</h3>
+            <p class="price">148 RON</p>
             <select class="size-select"><option>38</option><option>39</option><option>40</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select>
             <div class="stock-warning" style="display:none;">STOC LIMITAT</div>
             <div class="qty"><button>-</button><span>1</span><button>+</button></div>
@@ -288,7 +320,7 @@
 
 
     // PRODUSE
-    const products={1:["img/produs1.jpg"],2:["img/produs2.jpg"],3:["img/produs3.1.jpg","img/produs3.2.jpg","img/produs3.3.jpg"]};
+    const products={1:["img/produs1.jpg"],2:["img/produs2.jpg"],3:["img/produs3.1.jpg","img/produs3.2.jpg","img/produs3.3.jpg"],4:["img/produs4.1.jpg","img/produs4.2.jpg","img/produs4.3.jpg","img/produs4.4.jpg","img/produs4.5.jpg"]};
     let cart=JSON.parse(localStorage.getItem("cart")||"[]");
 
     // === STOC PE MĂRIMI (modifici TU valorile) ===
@@ -296,7 +328,8 @@
     const defaultStock = {
         "Produs 1": {38:5,39:3,40:0,41:2,42:1,43:0,44:4,45:2},
         "Produs 2": {38:0,39:2,40:5,41:3,42:0,43:1,44:2,45:0},
-        "Produs 3": {38:1,39:1,40:0,41:0,42:2,43:4,44:0,45:1}
+        "Produs 3": {38:1,39:1,40:0,41:0,42:2,43:4,44:0,45:1},
+        "Produs 4": {38:1,39:1,40:0,41:0,42:2,43:4,44:0,45:1}
     };
 
     let stock = JSON.parse(localStorage.getItem("stock")) || structuredClone(defaultStock);
